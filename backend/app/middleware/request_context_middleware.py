@@ -1,9 +1,10 @@
 import uuid
 from typing import Callable
-from fastapi import Request, Response
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
-from app.logging_config import get_logger
+from backend.app.logging_config import get_logger
 
 logger = get_logger("request_context")
 
@@ -11,14 +12,13 @@ logger = get_logger("request_context")
 class RequestContextMiddleware(BaseHTTPMiddleware):
     """
     Middleware that ensures each request has:
-    - X-Request-Id     (generated if missing)
+    - X-Request-Id (generated if missing)
     - X-Consent-Trace-Id (optional)
-    
-    Both values are attached to request.state so logging & services can use them.
+    Both stored in request.state for logging and services.
     """
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        # Read request ID or generate one
+        # Read or create request ID
         request_id = request.headers.get("X-Request-Id", str(uuid.uuid4()))
         consent_trace_id = request.headers.get("X-Consent-Trace-Id")
 
@@ -26,7 +26,7 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
         request.state.request_id = request_id
         request.state.consent_trace_id = consent_trace_id
 
-        # Log incoming request (sanitized, no PHI)
+        # Log the incoming request
         logger.info(
             "Incoming request",
             extra={
@@ -41,12 +41,12 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
             },
         )
 
-        # Process request
+        # Continue to the next handler
         response: Response = await call_next(request)
 
-        # Add IDs to response headers
+        # Add to response headers
         response.headers["X-Request-Id"] = request_id
         if consent_trace_id:
-            response.headers["X-Consent-Trace-Id"] = consent_trace_id
+            response.headers["X-Consent-Track-Id"] = consent_trace_id
 
         return response
