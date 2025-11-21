@@ -1,36 +1,24 @@
+# backend/app/main.py
+
 from fastapi import FastAPI
-from backend.app.logging_config import configure_logging
-
-from backend.app.middleware.request_context_middleware import RequestContextMiddleware
-
+from backend.app.core.logging_config import (
+    configure_logging,
+    get_logger,
+    get_request_id,
+    get_consent_trace_id,
+)
 
 configure_logging()
 
-app = FastAPI()
-
-from fastapi import FastAPI, Request
-from backend.app.logging_config import get_logger
-from backend.app.middleware.request_context_middleware import RequestContextMiddleware
+from backend.app.middleware.trace_context_middleware import TraceContextMiddleware
 
 app = FastAPI()
+app.add_middleware(TraceContextMiddleware)
 
-# Attach middleware
-app.add_middleware(RequestContextMiddleware)
-
-logger = get_logger("health")
+logger = get_logger("app-main")
 
 
 @app.get("/health")
-async def health_check(request: Request):
-    logger.info(
-        "Health check OK",
-        extra={
-            "trace_id": request.state.request_id,
-            "method": request.method,
-            "path": request.url.path,
-        }
-    )
-    return {"status": "healthy"}
-
-# Register middleware
-app.add_middleware(RequestContextMiddleware)
+async def health():
+    logger.info("health_check")
+    return {"status": "ok"}

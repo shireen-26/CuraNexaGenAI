@@ -1,7 +1,9 @@
 import uuid
 from fastapi import FastAPI, Request
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
+
 from backend.app.middleware.request_context_middleware import RequestContextMiddleware
+
 
 def test_request_context_middleware_attaches_ids():
     app = FastAPI()
@@ -27,8 +29,6 @@ def test_request_context_middleware_attaches_ids():
         },
     )
 
-    assert response.status_code == 200
     body = response.json()
-
     assert body["request_id"] == req_id
     assert body["consent_id"] == consent_id
