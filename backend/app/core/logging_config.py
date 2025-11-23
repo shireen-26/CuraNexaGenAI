@@ -1,4 +1,5 @@
 # backend/app/logging_config.py
+# PR v2 - observability improvements
 
 import logging
 import json

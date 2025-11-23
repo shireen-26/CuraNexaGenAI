@@ -1,6 +1,9 @@
 # backend/app/main.py
 
 from fastapi import FastAPI
+from backend.app.middleware.trace_middleware import TraceContextMiddleware
+
+
 from backend.app.core.logging_config import (
     configure_logging,
     get_logger,

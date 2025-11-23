@@ -54,3 +54,5 @@ class TraceMiddleware(BaseHTTPMiddleware):
             # Clear context to avoid leaking between requests
             set_request_id(None)
             set_consent_trace_id(None)
+
+TraceContextMiddleware = TraceMiddleware
